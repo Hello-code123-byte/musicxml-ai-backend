@@ -1,0 +1,69 @@
+from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import PlainTextResponse
+
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return {
+        "status": "MusicXML AI Backend Running"
+    }
+
+@app.post("/convert")
+async def convert(file: UploadFile = File(...)):
+
+    musicxml = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE score-partwise PUBLIC
+"-//Recordare//DTD MusicXML 3.1 Partwise//EN"
+"http://www.musicxml.org/dtds/partwise.dtd">
+
+<score-partwise version="3.1">
+
+  <part-list>
+    <score-part id="P1">
+      <part-name>Piano</part-name>
+    </score-part>
+  </part-list>
+
+  <part id="P1">
+    <measure number="1">
+
+      <attributes>
+        <divisions>1</divisions>
+
+        <key>
+          <fifths>0</fifths>
+        </key>
+
+        <time>
+          <beats>4</beats>
+          <beat-type>4</beat-type>
+        </time>
+
+        <clef>
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+
+      </attributes>
+
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+
+        <duration>1</duration>
+        <type>quarter</type>
+      </note>
+
+    </measure>
+  </part>
+
+</score-partwise>
+"""
+
+    return PlainTextResponse(
+        content=musicxml,
+        media_type="application/xml"
+    )
