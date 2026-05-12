@@ -3,9 +3,10 @@ from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from PIL import Image
-import easyocr
-import numpy as np
+import requests
 import io
+import os
+import base64
 
 app = FastAPI()
 
@@ -17,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-reader = easyocr.Reader(['en'])
+HF_TOKEN = os.getenv("HF_TOKEN")
 
 @app.get("/")
 def home():
@@ -32,24 +33,36 @@ async def convert(file: UploadFile = File(...)):
 
     image = Image.open(io.BytesIO(contents)).convert("RGB")
 
-    image_np = np.array(image)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
 
-    # OCR detection
-    results = reader.readtext(image_np)
+    image_bytes = buffer.getvalue()
 
-    detected_text = []
+    headers = {
+        "Authorization": f"Bearer {HF_TOKEN}"
+    }
 
-    for r in results:
-        detected_text.append(r[1])
+    # Example AI vision model
+    response = requests.post(
+        "https://api-inference.huggingface.co/models/microsoft/trocr-base-printed",
+        headers=headers,
+        data=image_bytes
+    )
 
-    print("Detected:", detected_text)
+    ai_result = response.text
 
     musicxml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="3.1">
 
   <work>
-    <work-title>{' '.join(detected_text)}</work-title>
+    <work-title>AI Recognition Result</work-title>
   </work>
+
+  <identification>
+    <creator type="composer">
+      {ai_result[:200]}
+    </creator>
+  </identification>
 
   <part-list>
     <score-part id="P1">
