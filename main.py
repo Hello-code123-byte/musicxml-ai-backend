@@ -3,9 +3,7 @@ from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from PIL import Image
-import requests
 import io
-import os
 
 app = FastAPI()
 
@@ -17,12 +15,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-HF_TOKEN = os.getenv("HF_TOKEN")
-
 @app.get("/")
 def home():
     return {
-        "status": "MusicXML AI Backend Running"
+        "status": "MusicXML Backend Running"
     }
 
 @app.post("/convert")
@@ -32,42 +28,12 @@ async def convert(file: UploadFile = File(...)):
 
     image = Image.open(io.BytesIO(contents)).convert("RGB")
 
-    buffer = io.BytesIO()
-    image.save(buffer, format="PNG")
-
-    image_bytes = buffer.getvalue()
-
-    headers = {
-        "Authorization": f"Bearer {HF_TOKEN}"
-    }
-
-    API_URL = "https://router.huggingface.co/hf-inference/models/microsoft/trocr-base-printed"
-
-    response = requests.post(
-        API_URL,
-        headers=headers,
-        data=image_bytes
-    )
-
-    try:
-        ai_result = response.json()
-    except:
-        ai_result = response.text
-
-    ai_result = str(ai_result)
-
-    musicxml = f"""<?xml version="1.0" encoding="UTF-8"?>
+    musicxml = """<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="3.1">
 
   <work>
-    <work-title>AI Recognition Result</work-title>
+    <work-title>Converted Score</work-title>
   </work>
-
-  <identification>
-    <creator type="composer">
-      {ai_result[:200]}
-    </creator>
-  </identification>
 
   <part-list>
     <score-part id="P1">
