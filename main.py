@@ -2,9 +2,13 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+from PIL import Image
+import easyocr
+import numpy as np
+import io
+
 app = FastAPI()
 
-# Allow frontend requests
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -12,6 +16,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+reader = easyocr.Reader(['en'])
 
 @app.get("/")
 def home():
@@ -22,12 +28,30 @@ def home():
 @app.post("/convert")
 async def convert(file: UploadFile = File(...)):
 
-    musicxml = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE score-partwise PUBLIC
-"-//Recordare//DTD MusicXML 3.1 Partwise//EN"
-"http://www.musicxml.org/dtds/partwise.dtd">
+    contents = await file.read()
 
+    image = Image.open(io.BytesIO(contents)).convert("RGB")
+
+    image_np = np.array(image)
+
+    # OCR detection
+    results = reader.readtext(image_np)
+
+    detected_text = []
+
+    for r in results:
+        detected_text.append(r[1])
+
+    print("Detected:", detected_text)
+
+    # TEMP fake XML still
+    musicxml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="3.1">
+
+  <work>
+    <work-title>{' '.join(detected_text)}</work-title>
+  </work>
+
   <part-list>
     <score-part id="P1">
       <part-name>Piano</part-name>
