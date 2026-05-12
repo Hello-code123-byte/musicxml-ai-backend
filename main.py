@@ -44,7 +44,6 @@ async def convert(file: UploadFile = File(...)):
 
     print("Detected:", detected_text)
 
-    # TEMP fake XML still
     musicxml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="3.1">
 
