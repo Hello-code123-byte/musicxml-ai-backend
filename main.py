@@ -1,7 +1,17 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import PlainTextResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Allow frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def home():
@@ -18,7 +28,6 @@ async def convert(file: UploadFile = File(...)):
 "http://www.musicxml.org/dtds/partwise.dtd">
 
 <score-partwise version="3.1">
-
   <part-list>
     <score-part id="P1">
       <part-name>Piano</part-name>
