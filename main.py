@@ -43,13 +43,20 @@ async def convert(file: UploadFile = File(...)):
     }
 
     # Example AI vision model
-    response = requests.post(
-        "https://api-inference.huggingface.co/models/microsoft/trocr-base-printed",
-        headers=headers,
-        data=image_bytes
-    )
+    API_URL = "https://router.huggingface.co/hf-inference/models/microsoft/trocr-base-printed"
 
+response = requests.post(
+    API_URL,
+    headers=headers,
+    data=image_bytes
+)
+
+    try:
+    ai_result = response.json()
+except:
     ai_result = response.text
+
+ai_result = str(ai_result)
 
     musicxml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="3.1">
