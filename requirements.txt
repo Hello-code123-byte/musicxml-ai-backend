@@ -3,3 +3,6 @@ uvicorn
 python-multipart
 music21
 pillow
+easyocr
+opencv-python-headless
+numpy
